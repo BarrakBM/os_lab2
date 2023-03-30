@@ -156,91 +156,97 @@ void FCFS()
 
 void SRTF()
 {
+    for (int i = 0; i < processes.size(); i ++){
+        processes[i].context = 0;
+    }
     cout << endl;
     cout << " ************************************************************" << endl;
     cout << " ************ Scheduling algorithm : SRTF *******************" << endl;
     cout << " ************************************************************ " << endl;
     cout << endl;
 
-    int time;
-    time = 0;
-    int context = 0;
+    int time = 0;
     int done = 0;
-    int t = 0;
-    int minm = INT_MAX;
-    int shortest_time = 0, finish_time;
-    bool check = false;
+    int current_process = -1;
+    int context_switches = 0;
+
     // create a table
     cout << setw(10) << "Pid" << setw(15) << "arrival" << setw(15) << "CPU-burst" << setw(15) << "finish" << setw(15) << "waiting time" << setw(15) << "turn around" << setw(15) << "NO.context" << endl;
 
-    // copy the burst time
-    int remaining_time[4];
-    // Copy the burst time into rt[]
-    for (int i = 0; i < 4; i++)
-    {
-        remaining_time[i] = processes[i].burst_time;
-    }
-
     // run the loop till all process are done
-    while (done != 4)
+    while (done != processes.size())
     {
+        int next_process = -1;
+        int min_remaining_time = INT_MAX;
+
         // find the process with minimum remaining time
         for (int j = 0; j < processes.size(); j++)
         {
-            if ((processes[j].arrival_time <= t) && (remaining_time[j] < minm) && remaining_time[j] > 0)
+            if (processes[j].arrival_time <= time && processes[j].remaining_time < min_remaining_time && processes[j].remaining_time > 0)
             {
-                minm = remaining_time[j];
-                shortest_time = j; // increment the time
-                check = true;
+                next_process = j;
+                min_remaining_time = processes[j].remaining_time;
             }
         }
 
-        if (check == false)
+        // if a new process has been selected
+        if (next_process != -1 && next_process != current_process)
         {
-            t++; // increment the time
-            continue;
-        }
-
-        // decrement the remaining time
-        remaining_time[shortest_time]--;
-
-        // change the min time to the shortest remaining
-        minm = remaining_time[shortest_time] ? remaining_time[shortest_time] : INT_MAX;
-
-        // process gets completely executed
-        if (remaining_time[shortest_time] == 0)
-        {
-            done++;        // increment time of completion
-            check = false; // make check false again
-
-            // finish time of finished proccess
-            finish_time = t + 1;
-            processes[shortest_time].finish_time = finish_time;
-            processes[shortest_time].waiting_time = finish_time - processes[shortest_time].burst_time - processes[shortest_time].arrival_time;
-            processes[shortest_time].turn_around_time = processes[shortest_time].waiting_time + processes[shortest_time].burst_time;
-
-            if (processes[shortest_time].waiting_time < 0)
+            // context switch occurred
+            context_switches++;
+            if (current_process != -1)
             {
-                processes[shortest_time].waiting_time = 0;
+                processes[current_process].context++;
             }
-            context++;
+            current_process = next_process;
         }
-        t++;
+
+        // decrement the remaining time of the current process
+        if (current_process != -1)
+        {
+            processes[current_process].remaining_time--;
+            if (processes[current_process].remaining_time == 0)
+            {
+                // process gets completely executed
+                done++;
+
+                // finish time of finished process
+                int finish_time = time + 1;
+                processes[current_process].finish_time = finish_time;
+
+                // calculate waiting and turnaround times
+                processes[current_process].waiting_time = finish_time - processes[current_process].burst_time - processes[current_process].arrival_time;
+                if (processes[current_process].waiting_time < 0)
+                {
+                    processes[current_process].waiting_time = 0;
+                }
+                processes[current_process].turn_around_time = processes[current_process].waiting_time + processes[current_process].burst_time;
+
+                // select the next process
+                current_process = -1;
+            }
+        }
+
+        time++;
     }
 
+    // print the table with process details
     for (int i = 0; i < processes.size(); i++)
     {
-        cout << setw(10) << processes[i].pid << setw(15) << processes[i].arrival_time << setw(15) << processes[i].burst_time << setw(15) << processes[i].finish_time << setw(15) << processes[i].waiting_time << setw(15) << processes[i].turn_around_time << setw(15) << context << endl;
+        cout << setw(10) << processes[i].pid << setw(15) << processes[i].arrival_time << setw(15) << processes[i].burst_time << setw(15) << processes[i].finish_time << setw(15) << processes[i].waiting_time << setw(15) << processes[i].turn_around_time << setw(15) << processes[i].context << endl;
     }
+
+    // calculate and print the average waiting and turnaround times
     float total_burst = 0;
     float total_wait = 0;
     float total_tt = 0;
-
+    int total_context;
     for (int i = 0; i < processes.size(); i++)
     {
         total_burst += processes[i].burst_time;
         total_wait += processes[i].waiting_time;
         total_tt += processes[i].turn_around_time;
+        total_context += processes[i].context;
     }
 
     float avg_burst = total_burst / processes.size();
@@ -249,6 +255,7 @@ void SRTF()
     cout << "Average CPU burst time = " << avg_burst << " ms" << endl;
     cout << "Average waiting time = " << avg_wait << " ms" << endl;
     cout << "Average turn around time = " << avg_tt << " ms" << endl;
+    cout << "Total No. of Context Switching Performed = " << total_context  << endl;
     cout << endl;
 
 }
