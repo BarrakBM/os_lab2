@@ -40,16 +40,20 @@ int main(int argc, char *argv[])
 {
 
     // check the argument
-    if (argc < 4)
+    if (argc < 3)
     {
-        cout << "Usage: " << argv[0] << " input_file algorithm"
-             << " quantumsize" << endl;
-        return 1;
+    cout << "Usage: " << argv[0] << " input_file algorithm quantumsize " << endl;
+    return 1;
     }
     // store the argument
     string input_file = argv[1];
     string algorithm = argv[2];
-    int quantum = stoi(argv[3]);
+    int quantum = 0;
+    if (argc == 4) {
+        quantum = stoi(argv[3]);
+    }
+     
+
     // check the file
     ifstream file(input_file);
     if (!file.is_open())
