@@ -108,12 +108,13 @@ int main(int argc, char *argv[])
 
     if (algorithm == "RR"){
 
-        RR();
+        RR(quantum);
     }
 
     return 0;
 }
 
+// FCFS
 void FCFS()
 {
     cout << endl;
@@ -168,6 +169,7 @@ void FCFS()
     cout << endl;
 }
 
+// SRTF
 void SRTF()
 {
     for (int i = 0; i < processes.size(); i ++){
@@ -274,17 +276,25 @@ void SRTF()
 
 }
 
+
+// ROUND ROBIN
 void RR(int quant){
     cout << endl;
     cout << " ************************************************************" << endl;
     cout << " ************ Scheduling algorithm :  RR  *******************" << endl;
     cout << " ************************************************************ " << endl;
     cout << endl;
+
+    // if context switch is 0 it's not in queue
+    for (int i = 0; i < processes.size(); i++) {
+    processes[i].context = 0;
+    processes[i].in_queue = false;
+    }
     // initilize the ready queue
     queue<int> ready_queue;
     ready_queue.push(0); // push the first process
     processes[0].in_queue = true;
-    int context_switches;
+    int context_switches = 0;
 
     int time; 
     int executed_process;
@@ -302,8 +312,8 @@ void RR(int quant){
             processes[i].done = true;
             time += processes[i].remaining_time; // update time 
             processes[i].finish_time = time; // get the finish time
-            processes[i].waiting_time = processes[i].finish_time - processes[i].arrival_time; // get waiting time
-            processes[i].turn_around_time = processes[i].waiting_time + processes[i].burst_time; // tt time
+            processes[i].turn_around_time = processes[i].finish_time - processes[i].arrival_time; // tt time
+             processes[i].waiting_time = processes[i].turn_around_time - processes[i].burst_time; // get waiting time
 
             if (processes[i].waiting_time < 0){
                 processes[i].waiting_time = 0;
@@ -331,6 +341,14 @@ void RR(int quant){
 
         }
         else{
+
+            // context is being switch so increment the context swithcong
+            
+            processes[i].context++;
+            processes[i].in_queue = true;
+
+            // increment switch counter
+            context_switches++;
             // process isn't done yet
             // substract the quantum from the remaining time
             processes[i].remaining_time -= quant;
@@ -355,5 +373,32 @@ void RR(int quant){
             ready_queue.push(i);
         }
     }
+    // print the table with process details
+    for (int i = 0; i < processes.size(); i++)
+    {
+        cout << setw(10) << processes[i].pid << setw(15) << processes[i].arrival_time << setw(15) << processes[i].burst_time << setw(15) << processes[i].finish_time << setw(15) << processes[i].waiting_time << setw(15) << processes[i].turn_around_time << setw(15) << processes[i].context << endl;
+    }
+
+    // calculate and print the average waiting and turnaround times
+    float total_burst = 0;
+    float total_wait = 0;
+    float total_tt = 0;
+    int total_context = 0;
+    for (int i = 0; i < processes.size(); i++)
+    {
+        total_burst += processes[i].burst_time;
+        total_wait += processes[i].waiting_time;
+        total_tt += processes[i].turn_around_time;
+        total_context += processes[i].context;
+    }
+
+    float avg_burst = total_burst / processes.size();
+    float avg_wait = total_wait / processes.size();
+    float avg_tt = total_tt / processes.size();
+    cout << "Average CPU burst time = " << avg_burst << " ms" << endl;
+    cout << "Average waiting time = " << avg_wait << " ms" << endl;
+    cout << "Average turn around time = " << avg_tt << " ms" << endl;
+    cout << "Total No. of Context Switching Performed = " << context_switches << endl;
+    cout << endl;
 
 }
