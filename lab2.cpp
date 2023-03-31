@@ -24,20 +24,23 @@ struct process
     int finish_time;
     int waiting_time;
     int turn_around_time;
+    bool done;
     int remaining_time;
     int context = 0;
+    bool in_queue;
 };
 // vector of type process(struct)
 vector<process> processes;
 
 void FCFS();
 void SRTF();
+void RR(int quant);
 
 int main(int argc, char *argv[])
 {
 
     // check the argument
-    if (argc < 3)
+    if (argc < 4)
     {
         cout << "Usage: " << argv[0] << " input_file algorithm"
              << " quantumsize" << endl;
@@ -46,7 +49,7 @@ int main(int argc, char *argv[])
     // store the argument
     string input_file = argv[1];
     string algorithm = argv[2];
-    // int quantum = stoi(argv[3]);
+    int quantum = stoi(argv[3]);
     // check the file
     ifstream file(input_file);
     if (!file.is_open())
@@ -95,6 +98,17 @@ int main(int argc, char *argv[])
     if (algorithm == "SRTF")
     {
         SRTF();
+    }
+
+    /*
+
+        2. RR
+
+    */
+
+    if (algorithm == "RR"){
+
+        RR();
     }
 
     return 0;
@@ -193,7 +207,7 @@ void SRTF()
         if (next_process != -1 && next_process != current_process)
         {
             // context switch occurred
-            context_switches++;
+            context_switches++;// count the context 
             if (current_process != -1)
             {
                 processes[current_process].context++;
@@ -257,5 +271,89 @@ void SRTF()
     cout << "Average turn around time = " << avg_tt << " ms" << endl;
     cout << "Total No. of Context Switching Performed = " << total_context  << endl;
     cout << endl;
+
+}
+
+void RR(int quant){
+    cout << endl;
+    cout << " ************************************************************" << endl;
+    cout << " ************ Scheduling algorithm :  RR  *******************" << endl;
+    cout << " ************************************************************ " << endl;
+    cout << endl;
+    // initilize the ready queue
+    queue<int> ready_queue;
+    ready_queue.push(0); // push the first process
+    processes[0].in_queue = true;
+    int context_switches;
+
+    int time; 
+    int executed_process;
+
+     // create a table
+    cout << setw(10) << "Pid" << setw(15) << "arrival" << setw(15) << "CPU-burst" << setw(15) << "finish" << setw(15) << "waiting time" << setw(15) << "turn around" << setw(15) << "NO.context" << endl;
+
+    while(!ready_queue.empty()){
+        int i = ready_queue.front();
+        ready_queue.pop();
+
+        // if process burst time is less the quantum then cosider it done
+        if(processes[i].remaining_time <= quant){
+            // consider it done
+            processes[i].done = true;
+            time += processes[i].remaining_time; // update time 
+            processes[i].finish_time = time; // get the finish time
+            processes[i].waiting_time = processes[i].finish_time - processes[i].arrival_time; // get waiting time
+            processes[i].turn_around_time = processes[i].waiting_time + processes[i].burst_time; // tt time
+
+            if (processes[i].waiting_time < 0){
+                processes[i].waiting_time = 0;
+            }
+
+            processes[i].remaining_time = 0;
+
+            // check for new process arival
+            if (executed_process != processes.size()){
+
+                // loop through the proccess
+                for(int i = 0; i < processes.size(); i++){
+
+                    process p = processes[i];
+
+                    //if a process already arrived
+                    // check if it's is done and if it's not in queue
+                    // if it's satisfy the condition push the process to the queue
+                    if(p.arrival_time <= time && !p.in_queue && !p.done){
+                        processes[i].in_queue = true;
+                        ready_queue.push(i);
+                    }
+                }
+            }
+
+        }
+        else{
+            // process isn't done yet
+            // substract the quantum from the remaining time
+            processes[i].remaining_time -= quant;
+            time += quant; // exectution time is equal to quantum time
+            // check again for new processes
+            if (executed_process != processes.size()){
+
+                // loop through the proccess
+                for(int i = 0; i < processes.size(); i++){
+
+                    process p = processes[i];
+
+                    //if a process already arrived
+                    // check if it's is done and if it's not in queue
+                    // if it's satisfy the condition push the process to the queue
+                    if(p.arrival_time <= time && !p.in_queue && !p.done){
+                        processes[i].in_queue = true;
+                        ready_queue.push(i);
+                    }
+                }
+            }
+            ready_queue.push(i);
+        }
+    }
 
 }
