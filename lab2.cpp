@@ -14,11 +14,12 @@
 #include <iomanip>
 #include <bits/stdc++.h>
 #include <queue>
+#include <string>
 using namespace std;
 
 struct process
 {
-    int pid;
+    string pid;
     int arrival_time;
     int burst_time;
     int finish_time;
@@ -133,10 +134,27 @@ void FCFS()
     int context = 0;
     int turn_around_time;
     int waiting_time;
+
+    
+
+    for (int i = 0; i < processes.size(); i++) {
+        
+    }
+    cout << endl;
     // create a table
     cout << setw(10) << "Pid" << setw(15) << "arrival" << setw(15) << "CPU-burst" << setw(15) << "finish" << setw(15) << "waiting time" << setw(15) << "turn around" << setw(15) << "NO.context" << endl;
+    
+    
+    string gantt_chart_pids = "";
+    string gantt_chart_asterisks = "";
+    
+
     for (int i = 0; i < processes.size(); i++)
     {
+
+        
+        
+        
 
         // waiting time
         processes[i].waiting_time = time - processes[i].arrival_time;
@@ -146,9 +164,17 @@ void FCFS()
         processes[i].finish_time = time;
         // turn around time
         processes[i].turn_around_time = processes[i].finish_time - processes[i].arrival_time;
-
+        
+        gantt_chart_pids += "P" + processes[i].pid + string((processes[i].burst_time - 1) * 1, ' ');
+        gantt_chart_asterisks += string(processes[i].burst_time, '*') + ((processes[i].burst_time - 1) * 1, " ");
+    
+       
         cout << setw(10) << processes[i].pid << setw(15) << processes[i].arrival_time << setw(15) << processes[i].burst_time << setw(15) << processes[i].finish_time << setw(15) << processes[i].waiting_time << setw(15) << processes[i].turn_around_time << setw(15) << context << endl;
     }
+    
+    
+    cout << gantt_chart_pids << endl;
+    cout << gantt_chart_asterisks << endl;
 
     float total_burst = 0;
     float total_wait = 0;
