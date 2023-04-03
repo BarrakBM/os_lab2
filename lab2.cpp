@@ -29,6 +29,7 @@ struct process
     int remaining_time;
     int context = 0;
     bool in_queue;
+    int last_start_time;
 };
 // vector of type process(struct)
 vector<process> processes;
@@ -215,7 +216,9 @@ void SRTF()
     int done = 0;
     int current_process = -1;
     int context_switches = 0;
-
+    string gantt_chart_pids = "";
+    string gantt_chart_asterisks = "";
+    vector<pair<string, size_t>> pid_positions;
     // create a table
     cout << setw(10) << "Pid" << setw(15) << "arrival" << setw(15) << "CPU-burst" << setw(15) << "finish" << setw(15) << "waiting time" << setw(15) << "turn around" << setw(15) << "NO.context" << endl;
 
@@ -238,7 +241,14 @@ void SRTF()
         // if a new process has been selected
         if (next_process != -1 && next_process != current_process)
         {
-            // context switch occurred
+            
+           if (current_process != -1)
+            {
+                pid_positions.push_back(make_pair(processes[current_process].pid, gantt_chart_asterisks.length()));
+                gantt_chart_asterisks += string(processes[current_process].burst_time - processes[current_process].remaining_time, '*');
+            }
+                
+             // context switch occurred
             context_switches++;// count the context 
             if (current_process != -1)
             {
@@ -250,6 +260,12 @@ void SRTF()
         // decrement the remaining time of the current process
         if (current_process != -1)
         {
+
+            // if (current_process != -1)
+            // {
+            //     gantt_chart_pids += "P" + string(processes[current_process].pid) + ' ';
+            //     gantt_chart_asterisks += string(processes[current_process].burst_time - processes[current_process].remaining_time, '*');
+            // }
             processes[current_process].remaining_time--;
             if (processes[current_process].remaining_time == 0)
             {
@@ -268,6 +284,11 @@ void SRTF()
                 }
                 processes[current_process].turn_around_time = processes[current_process].waiting_time + processes[current_process].burst_time;
 
+                //gantt_chart_pids += "P" + processes[i].pid + string((processes[i].burst_time - 1) * 1, ' ');
+                // gantt_chart_pids += "P" + string(processes[current_process].pid) + ' ';
+                // gantt_chart_asterisks += string(processes[current_process].burst_time, '*');
+
+
                 // select the next process
                 current_process = -1;
             }
@@ -276,11 +297,19 @@ void SRTF()
         time++;
     }
 
+    
     // print the table with process details
     for (int i = 0; i < processes.size(); i++)
     {
         cout << setw(10) << processes[i].pid << setw(15) << processes[i].arrival_time << setw(15) << processes[i].burst_time << setw(15) << processes[i].finish_time << setw(15) << processes[i].waiting_time << setw(15) << processes[i].turn_around_time << setw(15) << processes[i].context << endl;
     }
+
+    for (auto it = pid_positions.begin(); it != pid_positions.end(); ++it) {
+    const auto& pid_position = *it;
+    // statements
+    }
+    cout << gantt_chart_pids << endl;
+    cout << gantt_chart_asterisks << endl;
 
     // calculate and print the average waiting and turnaround times
     float total_burst = 0;
@@ -328,6 +357,8 @@ void RR(int quant){
 
     int time; 
     int executed_process;
+    string gantt_chart_pids = "";
+    string gantt_chart_asterisks = "";
 
      // create a table
     cout << setw(10) << "Pid" << setw(15) << "arrival" << setw(15) << "CPU-burst" << setw(15) << "finish" << setw(15) << "waiting time" << setw(15) << "turn around" << setw(15) << "NO.context" << endl;
@@ -336,6 +367,10 @@ void RR(int quant){
         int i = ready_queue.front();
         ready_queue.pop();
 
+        //gnatt chart
+        gantt_chart_pids += "P" + processes[i].pid + string((processes[i].remaining_time - 1) *1, ' ');
+        gantt_chart_asterisks  += string(processes[i].remaining_time, '*') +   " ";
+       
         // if process burst time is less the quantum then cosider it done
         if(processes[i].remaining_time <= quant){
             // consider it done
@@ -409,6 +444,9 @@ void RR(int quant){
         cout << setw(10) << processes[i].pid << setw(15) << processes[i].arrival_time << setw(15) << processes[i].burst_time << setw(15) << processes[i].finish_time << setw(15) << processes[i].waiting_time << setw(15) << processes[i].turn_around_time << setw(15) << processes[i].context << endl;
     }
 
+    cout << gantt_chart_pids << endl;
+    cout << gantt_chart_asterisks << endl;
+        
     // calculate and print the average waiting and turnaround times
     float total_burst = 0;
     float total_wait = 0;
