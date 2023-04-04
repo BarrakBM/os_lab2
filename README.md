@@ -12,17 +12,11 @@
 
 ##  Description of the program
 
-* ### Part A   ### 
-  1.  The first part of the code obtains information about the system using the uname function. The system name, node name, release, and version are printed to the console.
-
-* ### Part B   ###
-  1. The second part of the code obtains the following system information:
-
-	*	The time when the system was last booted
-	*	The amount of time since the system was last booted
-	*	The amount of time that the CPU has spent in user mode and system mode
-	*	This information is obtained by reading various files in the /proc directory, which provides information about the system.
-	* obtains information about the system's memory usage. This part of the code is not implemented yet.
+  1.  The code implement 3 different type scheduling (FCFS, RR, SRTF). The command line argument wil be 
+	Name of the input file, scheduling algorithm and quantumsize (for RR algorithm).	
+	it will print the gnatt chart and a table with pid, arrival, cpu-burst, finish, wait time, turn 	
+	around time and # of context, then it will calculate the avg burst time, avg waiting time, avg 
+	turn around time and number of context
 
 
 ##  Source files
